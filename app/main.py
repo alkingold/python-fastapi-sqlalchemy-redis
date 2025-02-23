@@ -1,17 +1,23 @@
 """
-This module contains API routes
+This module is an entry point of the Action Board FastAPI
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from app.db.database import engine, Base
+from app.routes.user import router as user_router
 
-app = FastAPI()
-
-@app.get("/")
-def read_root():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """
-    Test doc
-
-    Returns:
-        object: Test Fast API.
+    Handle application lifecycles
     """
-    return {"message": "Hello, FastAPI!"}
+    print("Starting Action Board application...")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield # here cleanup when stopping application
+    print("Stopping application...")
+
+app = FastAPI(title="Action Board API", lifespan=lifespan)
+
+app.include_router(user_router, prefix="/api", tags=["Users"])
