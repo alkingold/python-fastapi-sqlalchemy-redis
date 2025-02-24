@@ -3,13 +3,14 @@ This module contains pydantic schemas for User
 """
 
 from pydantic import BaseModel
+from typing import Optional
 
 class UserBase(BaseModel):
     """
     Pydantic base schema for User
     """
     username: str
-    is_admin: bool
+    is_admin: Optional[bool] = False
 
 class UserCreate(UserBase):
     """

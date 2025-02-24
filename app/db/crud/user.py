@@ -35,10 +35,12 @@ async def create_user(
 
 async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
     """
-    Gets user by username
+    Gets user by username from database
+    Returns None if user not found
     """
-    result = await db.execute(select(User).filter(User.username == username))
-    return result.scalars().first()
+    stmt = select(User).where(User.username == username)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
 
 async def get_users(db: AsyncSession):
     """

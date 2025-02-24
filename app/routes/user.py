@@ -2,12 +2,13 @@
 This module contains user related routes
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.user import UserCreate, UserResponse
 from app.db.crud.user import create_user, get_user_by_username, get_users
 from app.db.database import get_db
+from app.core.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -29,13 +30,18 @@ async def add_user(user_data: UserCreate, db: AsyncSession = Depends(get_db)) ->
     try:
         existing_user = await get_user_by_username(db, user_data.username)
         if existing_user:
-            raise HTTPException(status_code=400, detail="This username is already taken")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This username is already taken"
+            )
 
         user = await create_user(db, user_data)
-        # return UserSchema.model_validate(user)
-        return user
+        return UserResponse.model_validate(user)
     except SQLAlchemyError as exc:
-        raise HTTPException(status_code=500, detail="Internal Server Error") from exc
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        ) from exc
 
 @router.get("/users")
 async def list_users(db: AsyncSession = Depends(get_db)):
@@ -48,3 +54,12 @@ async def list_users(db: AsyncSession = Depends(get_db)):
     Returns:
     """
     return await get_users(db)
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(
+    current_user: UserResponse = Depends(get_current_user)
+) -> UserResponse:
+    """
+    Retrieve current user profile
+    """
+    return UserResponse.model_validate(current_user)
