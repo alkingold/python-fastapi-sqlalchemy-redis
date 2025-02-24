@@ -11,8 +11,6 @@ services:
       - "8080:8000"
     volumes:
       - .:/app
-    env_file:
-      - .env
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - REDIS_URL=${REDIS_URL}

@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.db.database import engine, Base
 from app.routes.user import router as user_router
+from app.routes.auth import router as auth_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,3 +22,4 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Action Board API", lifespan=lifespan)
 
 app.include_router(user_router, prefix="/api", tags=["Users"])
+app.include_router(auth_router)
