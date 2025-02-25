@@ -2,8 +2,8 @@
 This module contains pydantic schemas for User
 """
 
-from pydantic import BaseModel
 from typing import Optional
+from pydantic import BaseModel
 
 class UserBase(BaseModel):
     """
