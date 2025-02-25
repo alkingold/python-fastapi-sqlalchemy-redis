@@ -1,5 +1,5 @@
 """
-This module contains database CRUD operations
+This module contains database CRUD operations for users
 """
 
 from sqlalchemy.ext.asyncio import AsyncSession
