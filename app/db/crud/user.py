@@ -15,7 +15,7 @@ async def create_user(
     """
     Creates new user in the database
 
-    Attributes:
+    Args:
         db (AsyncSession): Async database session
         user_data: UserCreate
 

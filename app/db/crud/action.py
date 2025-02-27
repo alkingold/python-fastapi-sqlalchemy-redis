@@ -24,23 +24,51 @@ async def create_action(
 async def get_action(
     db: AsyncSession,
     action_id: int
-) -> Action:
+) -> Action | None:
     """
     Retrieve an action by its ID
     """
     result = await db.execute(
         select(Action).where(Action.id == action_id)
     )
-    return result.scalars().first()
+    return result.scalar_one_or_none()
 
-async def get_user_actions(
+async def get_actions(
     db: AsyncSession,
-    user_id: int
+    user_id: int,
+    is_admin: bool,
+    page: int = 1,
+    page_size: int = 10
 ) -> list[Action]:
     """
-    Retrieve all actions for a given user
+    Retrieve all actions based on user role
+    - Admins get all actions
+    - Regular users get only their own actions
+    - Pagination is applied using `limit` and `offset`
+    - Limit and offset are calculated from page number and items per page params
+
+    Args:
+        db (AsyncSession): Database async session
+        user_id (int): ID of the currently connected user
+        is_admin (bool): Whether current user has admin role
+        page (int): Page number
+        page_size (int): number of items per page
+
+    Returns:
+        list[Action]: List of actions based on user role
+        - All actions for admins
+        - User's actions for regular user
     """
-    result = await db.execute(select(Action).where(Action.user_id == user_id))
+    offset = (page - 1) * page_size
+
+    query = select(Action)
+
+    if not is_admin:
+        query = query.where(Action.user_id == user_id)
+
+    query = query.limit(page_size).offset(offset)
+
+    result = await db.execute(query)
     return result.scalars().all()
 
 async def update_action(
